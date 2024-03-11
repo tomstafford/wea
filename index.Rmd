@@ -1,0 +1,21 @@
+---
+title: "wea project"
+output: html_document
+date: "2024-03-11"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Wea orj
+
+https://www.metoffice.gov.uk/pub/data/weather/uk/climate/stationdata/sheffielddata.txt
+
+```{r}
+
+datasource <- 'https://www.metoffice.gov.uk/pub/data/weather/uk/climate/stationdata/sheffielddata.txt'
+
+df <- read.csv(datasource)
+```
+
