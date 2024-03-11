@@ -5,7 +5,7 @@ date: "2024-03-11"
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = FALSE, warning=FALSE)
 
 # install.packages("gifski") #if not already installed
 
@@ -19,6 +19,8 @@ library(htmlwidgets)
 ## Wea orj
 
 https://www.metoffice.gov.uk/pub/data/weather/uk/climate/stationdata/sheffielddata.txt
+
+https://tomstafford.github.io/wea/
 
 ```{r}
 
@@ -36,9 +38,9 @@ modified_content <- gsub("\\#", "", modified_content)
 modified_content <- gsub("Provisional", "", modified_content)
 
 # Write the modified content back to the file
-writeLines(modified_content, here("sanitised.txt"))
+writeLines(modified_content, here("data","sanitised.txt"))
 
-df <- read.table(here("sanitised.txt"), skip=7, fill=TRUE)
+df <- read.table(here("data","sanitised.txt"), skip=7, fill=TRUE)
 
 col_names <- c("year","month", "max_t", "min_t", "days", "rain", "sun")
 
@@ -92,6 +94,8 @@ anim <- p3 + geom_point() +
   transition_manual(year, cumulative = TRUE) +
   ggtitle('The year is: {frame + 1882}')
 
+anim
+
 anim_save(here("plots", "average_by_year.gif"), anim, renderer = gifski_renderer())
 ```
 
@@ -102,9 +106,10 @@ ROLL OVER
 p4 <- ggplot(cf, mapping=aes(x=month, y=max_t, 
                              group=year, col=year)) +
   geom_line()
-p4
+
 ggplotly(p4)
-saveWidget(ggplotly(p4), file='interactive.html')
+
+saveWidget(ggplotly(p4), file=here('plots','interactive.html'))
 
 
 ```
