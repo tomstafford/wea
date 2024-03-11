@@ -16,6 +16,10 @@ https://www.metoffice.gov.uk/pub/data/weather/uk/climate/stationdata/sheffieldda
 
 datasource <- 'https://www.metoffice.gov.uk/pub/data/weather/uk/climate/stationdata/sheffielddata.txt'
 
-df <- read.csv(datasource)
+df <- read.csv(datasource,sep='\t',skip=6)
+
+colnames(df)=c('yyyy','mm','tmax','tmin','af','rain','sun')
+
+
 ```
 
