@@ -68,6 +68,8 @@ p <- ggplot(cf, mapping=aes(x=month, y=max_t, group=year,
 p + geom_line(alpha=.1) + 
   scale_color_gradient(low='blue', high='red')
 
+p
+
 july <- cf %>% 
   filter(month == 7)
 
@@ -75,16 +77,19 @@ p2 <- ggplot(july, mapping=aes(x=year, y=max_t,
                                col=max_t))
 p2 + geom_point()
 
-average <- cf %>% 
-  group_by(year) %>% 
-  summarise(avg_upper = mean(max_t), 
-            avg_lower = mean(min_t))
 
 ```
 
 ANIMATED
 
 ```{r}
+
+average <- cf %>% 
+  group_by(year) %>% 
+  summarise(avg_upper = mean(max_t), 
+            avg_lower = mean(min_t))
+
+
 # -------LET'S ANIMATE-----
 p3 <- ggplot(average, mapping=aes(x=year, y=avg_upper,
                                   frame=year))
