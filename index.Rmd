@@ -6,6 +6,14 @@ date: "2024-03-11"
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+
+# install.packages("gifski") #if not already installed
+
+library(here)
+library(tidyverse)
+library(gganimate)
+library(plotly)
+library(htmlwidgets)
 ```
 
 ## Wea orj
@@ -14,12 +22,89 @@ https://www.metoffice.gov.uk/pub/data/weather/uk/climate/stationdata/sheffieldda
 
 ```{r}
 
-datasource <- 'https://www.metoffice.gov.uk/pub/data/weather/uk/climate/stationdata/sheffielddata.txt'
+# -----------IMPORT DATA------------
+source <- 'https://www.metoffice.gov.uk/pub/data/weather/uk/climate/stationdata/sheffielddata.txt'
 
-df <- read.csv(datasource,sep='\t',skip=6)
+# Read the contents of the file
+file_content <- readLines(source)
 
-colnames(df)=c('yyyy','mm','tmax','tmin','af','rain','sun')
+# Replace all asterisks with an empty string
+modified_content <- gsub("\\*", "", file_content)
 
+modified_content <- gsub("\\#", "", modified_content)
+
+modified_content <- gsub("Provisional", "", modified_content)
+
+# Write the modified content back to the file
+writeLines(modified_content, here("sanitised.txt"))
+
+df <- read.table(here("sanitised.txt"), skip=7, fill=TRUE)
+
+col_names <- c("year","month", "max_t", "min_t", "days", "rain", "sun")
+
+colnames(df) <- col_names
+
+# -----------TIDY DATA------------
+cf <- df %>% 
+  mutate(sun = parse_number(sun)) %>% # remove non-numeric data
+  mutate(year=as.numeric(year), # change data type to numeric
+         max_t=as.numeric(max_t),
+         min_t=as.numeric(min_t),
+         days=as.numeric(days),
+         rain=as.numeric(rain))
+write.csv(cf, here("data", "tidy_data.csv"))
 
 ```
 
+PLOTS
+
+```{r}
+# ----------MAKE SOME PLOTS------------
+
+p <- ggplot(cf, mapping=aes(x=month, y=max_t, group=year,
+                            col=year))
+p + geom_line(alpha=.1) + 
+  scale_color_gradient(low='blue', high='red')
+
+july <- cf %>% 
+  filter(month == 7)
+
+p2 <- ggplot(july, mapping=aes(x=year, y=max_t, 
+                               col=max_t))
+p2 + geom_point()
+
+average <- cf %>% 
+  group_by(year) %>% 
+  summarise(avg_upper = mean(max_t), 
+            avg_lower = mean(min_t))
+
+```
+
+ANIMATED
+
+```{r}
+# -------LET'S ANIMATE-----
+p3 <- ggplot(average, mapping=aes(x=year, y=avg_upper,
+                                  frame=year))
+#p3 + geom_point() 
+
+anim <- p3 + geom_point() + 
+  transition_manual(year, cumulative = TRUE) +
+  ggtitle('The year is: {frame + 1882}')
+
+anim_save(here("plots", "average_by_year.gif"), anim, renderer = gifski_renderer())
+```
+
+ROLL OVER
+
+```{r}
+# -------LET'S ROLL OVER------
+p4 <- ggplot(cf, mapping=aes(x=month, y=max_t, 
+                             group=year, col=year)) +
+  geom_line()
+p4
+ggplotly(p4)
+saveWidget(ggplotly(p4), file='interactive.html')
+
+
+```
